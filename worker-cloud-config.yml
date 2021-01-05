@@ -1,0 +1,44 @@
+#cloud-config
+# vim: syntax=yaml
+#
+#   The following sets up a GDA development VM with Consul, Nomad, Vault, Docker, Docker-compose
+#
+write_files:
+# Set Docker CIDR to 172.17.0.0/24
+- encoding: b64
+  content: ewogICJkZWZhdWx0LWFkZHJlc3MtcG9vbHMiOgogIFsKICAgIHsiYmFzZSI6IjE3Mi4xNy4wLjAvMjQiLCJzaXplIjoyN30KICBdCn0K
+  owner: root:root
+  path: /etc/docker/daemon.json
+  permissions: '0644'
+
+runcmd:
+  # Set public DNS server
+  - sudo rm -f /etc/systemd/resolved.conf 
+  - sudo rm -f /etc/resolv.conf
+  - sudo echo -e "[Resolve] \nDNS=1.1.1.1 8.8.8.8 8.8.4.4" > /tmp/resolved.conf
+  - sudo cp -f /tmp/resolved.conf /etc/systemd/resolved.conf 
+  - sudo ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
+  - sudo service systemd-resolved restart
+  - sudo apt-get update --quiet 
+  - sudo apt-get --quiet --yes install apt-transport-https ca-certificates curl software-properties-common git
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  - sudo add-apt-repository --yes "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+  - sudo apt-get --quiet --yes update --quiet
+  - sudo apt-get --quiet --yes install docker-ce
+  # Allow ubuntu user to run docker (no sudo)
+  - sudo usermod -aG docker ${USER}
+  - sudo cat /etc/group | grep docker
+  - sudo su - ubuntu
+  # Setup k8s
+  - sudo modprobe br_netfilter
+  - lsmod | grep br_netfilter
+  - sudo mkidr -p /etc/sysctl.d/
+  - sudo echo -e "net.bridge.bridge-nf-call-ip6tables = 1 \n net.bridge.bridge-nf-call-iptables = 1" > /tmp/k8s.conf
+  - sudo mv /tmp/k8s.conf /etc/sysctl.d/k8s.conf
+  - sudo sysctl --system
+  - curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+  - sudo echo -e "deb https://apt.kubernetes.io/ kubernetes-xenial main" > /tmp/kubernetes.list
+  - sudo mv -f /tmp/kubernetes.list /etc/apt/sources.list.d/kubernetes.list
+  - sudo apt-get update --quiet 
+  - sudo apt-get --quiet --yes install kubelet kubeadm kubectl
+  - sudo apt-mark hold kubelet kubeadm kubectl
