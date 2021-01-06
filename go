@@ -34,7 +34,7 @@ goal_prepare() {
   check "multipass" "Multipass is not installed" "Multipass is installed"
 }
 
-goal_masterCreate() {
+goal_master() {
   while [ $# -gt 0 ]; do
     case "$1" in
       --disk*)
@@ -61,7 +61,7 @@ goal_masterCreate() {
   multipass launch --cloud-init master-cloud-config.yml --verbose --disk "${__DISK:-25G}" --mem "${__MEM:-2G}" --name "${__NAME}" "${IMAGE:-lts}"
 }
 
-goal_workCreate() {
+goal_worker() {
   while [ $# -gt 0 ]; do
     case "$1" in
       --disk*)
@@ -99,9 +99,9 @@ else
 
 goal:
 
-    prepare             -- check if all tools are installed
-    masterInit          -- Install master k8s config on new ubuntu vm
-    workerInit          -- Install worker k8s config on new ubuntu vm
+    prepare         -- check if all tools are installed
+    master          -- Install master k8s config on new ubuntu vm
+    worker          -- Install worker k8s config on new ubuntu vm
 
 "
   exit 1

@@ -17,15 +17,15 @@ brew install multipass
 ### Create a k8s master node
 
 ```sh
-./go masterCreate --name=master-01
+./go master --name=master-01
 # or
-./go masterCreate --memory=2G --disk=25G --name=master-01
+./go master --memory=2G --disk=25G --name=master-01
 ```
 
 ### Create a k8s worker node
 
 ```sh
-./go masterCreate --name=worker-01
+./go worker --name=worker-01
 # or
-./go masterCreate --memory=2G --disk=25G --name=worker-01
+./go worker --memory=2G --disk=25G --name=worker-01
 ```
